@@ -1,29 +1,34 @@
 import { Router } from 'express';
-import { uuid } from 'uuidv4';
-import { startOfHour, parseISO } from 'date-fns';
+import { startOfHour, parseISO, isEqual } from 'date-fns';
+
+import Appointment from '../models/Appointment';
 
 const appointmentsRouter = Router();
 
-const apointments = [];
+const appointments: Appointment[] = [];
 
 appointmentsRouter.post('/', (request, response) => {
-  const { name, date } = request.body;
+  const { provider, date } = request.body;
 
   const parsedDate = startOfHour(parseISO(date));
 
-  const apointment = {
-    id: uuid(),
-    name,
-    date: parsedDate,
-  };
+  const findAppointmentInSameDate = appointments.find(appointment =>
+    isEqual(appointment.date, parsedDate),
+  );
 
-  apointments.push(apointment);
+  if (findAppointmentInSameDate) {
+    return response.status(400).json({ message: 'Agendamento ja cadastrado' });
+  }
 
-  response.json(apointment);
+  const appointment = new Appointment(provider, parsedDate);
+
+  appointments.push(appointment);
+
+  response.json(appointment);
 });
 
 appointmentsRouter.get('/', (request, response) => {
-  response.json({ message: 'deu bom' });
+  response.json(appointments);
 });
 
 export default appointmentsRouter;
