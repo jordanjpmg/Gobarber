@@ -15,6 +15,9 @@ export default class User {
   name: string;
 
   @Column()
+  email: string;
+
+  @Column()
   password: string;
 
   @CreateDateColumn()
